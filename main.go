@@ -3,8 +3,10 @@ package main
 import (
 	"embed"
 	"fmt"
+	"posto/app/api"
 	"posto/app/config"
 	"posto/app/db"
+	"posto/app/repositories"
 
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/options"
@@ -26,7 +28,7 @@ func main() {
 	}
 
 	// init db
-	_, err = db.InitDB()
+	DB, err := db.InitDB()
 	if err != nil {
 		fmt.Println("Error initializing database:", err)
 		return
@@ -39,7 +41,13 @@ func main() {
 		return
 	}
 
-	fmt.Println("App Initiated")
+	// Create repositories
+	Repositories := repositories.NewRepositories(DB)
+
+	// Create api
+	Api := api.NewApi(Repositories)
+
+	Repositories.Collection.SelectAllCollectionsWithFiles()
 
 	// Create application with options
 	err = wails.Run(&options.App{
@@ -53,6 +61,7 @@ func main() {
 		OnStartup:        app.startup,
 		Bind: []interface{}{
 			app,
+			Api.CollectionApi,
 		},
 	})
 

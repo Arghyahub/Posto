@@ -3,7 +3,7 @@ package models
 import "time"
 
 type File struct {
-	Id           int64     `json:"id"`
+	PkFileId     int64     `json:"pk_file_id"`
 	Name         string    `json:"name"`
 	CollectionId int64     `json:"collection_id"`
 	IsFolder     bool      `json:"is_folder"`

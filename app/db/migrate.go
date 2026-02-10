@@ -1,12 +1,15 @@
 package db
 
 import (
+	"embed"
 	"fmt"
-	"os"
 	"path"
 	"sort"
 	"strings"
 )
+
+//go:embed migrations/*.sql
+var migrationsFS embed.FS
 
 func Migrate() error {
 	dbConn := DB
@@ -14,12 +17,7 @@ func Migrate() error {
 		return fmt.Errorf("database connection not initialized")
 	}
 
-	cwd, err := os.Getwd()
-	if err != nil {
-		return fmt.Errorf("error getting current working directory: %v", err)
-	}
-
-	files, err := os.ReadDir(path.Join(cwd, "app/db/migrations"))
+	files, err := migrationsFS.ReadDir("migrations")
 
 	if err != nil {
 		return fmt.Errorf("error reading migrations directory: %v", err)
@@ -85,9 +83,9 @@ func Migrate() error {
 	}
 
 	for _, migration_file := range migrations_to_apply {
-		file_path := path.Join(cwd, "app/db/migrations", migration_file)
+		file_path := path.Join("migrations", migration_file)
 
-		migration_content, err := os.ReadFile(file_path)
+		migration_content, err := migrationsFS.ReadFile(file_path)
 		if err != nil {
 			return fmt.Errorf("error reading migration file: %v", err)
 		}
