@@ -10,19 +10,19 @@ import (
 
 var DB *sql.DB
 
-func InitDB() error {
+func InitDB() (*sql.DB, error) {
 	var err error
 	configData := config.ConfigData
 	if configData == nil {
-		return fmt.Errorf("config not initialized")
+		return nil, fmt.Errorf("config not initialized")
 	}
 
 	DB, err = sql.Open("sqlite3", configData.DBPath)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	DB.SetMaxOpenConns(1)
 
-	return DB.Ping()
+	return DB, nil
 }

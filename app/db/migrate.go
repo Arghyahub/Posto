@@ -14,7 +14,12 @@ func Migrate() error {
 		return fmt.Errorf("database connection not initialized")
 	}
 
-	files, err := os.ReadDir("./migrations")
+	cwd, err := os.Getwd()
+	if err != nil {
+		return fmt.Errorf("error getting current working directory: %v", err)
+	}
+
+	files, err := os.ReadDir(path.Join(cwd, "app/db/migrations"))
 
 	if err != nil {
 		return fmt.Errorf("error reading migrations directory: %v", err)
@@ -80,7 +85,7 @@ func Migrate() error {
 	}
 
 	for _, migration_file := range migrations_to_apply {
-		file_path := path.Join("./migrations", migration_file)
+		file_path := path.Join(cwd, "app/db/migrations", migration_file)
 
 		migration_content, err := os.ReadFile(file_path)
 		if err != nil {

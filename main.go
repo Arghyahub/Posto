@@ -2,6 +2,9 @@ package main
 
 import (
 	"embed"
+	"fmt"
+	"posto/app/config"
+	"posto/app/db"
 
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/options"
@@ -15,8 +18,31 @@ func main() {
 	// Create an instance of the app structure
 	app := NewApp()
 
+	// Setup config
+	_, err := config.NewConfig()
+	if err != nil {
+		fmt.Println("Error setting up config:", err)
+		return
+	}
+
+	// init db
+	_, err = db.InitDB()
+	if err != nil {
+		fmt.Println("Error initializing database:", err)
+		return
+	}
+
+	// run migrations
+	err = db.Migrate()
+	if err != nil {
+		fmt.Println("Error running migrations:", err)
+		return
+	}
+
+	fmt.Println("App Initiated")
+
 	// Create application with options
-	err := wails.Run(&options.App{
+	err = wails.Run(&options.App{
 		Title:  "posto",
 		Width:  1024,
 		Height: 768,

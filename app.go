@@ -3,8 +3,6 @@ package main
 import (
 	"context"
 	"fmt"
-	"posto/app/config"
-	"posto/app/db"
 )
 
 // App struct
@@ -21,20 +19,6 @@ func NewApp() *App {
 // so we can call the runtime methods
 func (a *App) startup(ctx context.Context) {
 	a.ctx = ctx
-	// Setup config
-	_, err := config.NewConfig()
-	if err != nil {
-		fmt.Println("Error setting up config:", err)
-	}
-
-	// init db
-	err = db.InitDB()
-	if err != nil {
-		fmt.Println("Error initializing database:", err)
-	}
-
-	// run migrations
-
 }
 
 // Greet returns a greeting for the given name
