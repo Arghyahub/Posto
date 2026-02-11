@@ -36,58 +36,93 @@ func (c *CollectionRepo) SelectAllCollections() ([]models.Collection, error) {
 }
 
 type FileJoinType struct {
-	FileId       int            `json:"file_id"`
+	FileId       *int           `json:"file_id"`
 	Name         string         `json:"name"`
 	IsFolder     int            `json:"is_folder"`
 	ParentId     *int           `json:"parent_id"`
 	CollectionId *int           `json:"collection_id"`
 	Files        []FileJoinType `json:"files"`
+	Visited      bool           `json:"visited"`
 }
 
 type CollectionJoinType struct {
-	CollectionId int            `json:"collection_id"`
+	CollectionId *int           `json:"collection_id"`
 	Name         string         `json:"name"`
 	Files        []FileJoinType `json:"files"`
 }
 
-func (c *CollectionRepo) SelectAllCollectionsWithFiles() ([]any, error) {
+// creates nested structure of files
+func nestedFiles(files []FileJoinType, i int) FileJoinType {
+	files[i].Visited = true
+
+	for j := range files {
+		if files[j].ParentId == nil {
+			continue
+		}
+
+		if !files[j].Visited && *files[j].ParentId == *files[i].FileId {
+			child := nestedFiles(files, j)
+			files[i].Files = append(files[i].Files, child)
+		}
+	}
+
+	return files[i]
+}
+
+func (c *CollectionRepo) SelectAllCollectionsWithFiles() ([]CollectionJoinType, error) {
 	rows, err := c.DB.Query(`
 		Select 
-    	c.pk_collection_id,
-    	c.name,
-    	json_group_array(
-        	json_object(
-            	'file_id',f.pk_file_id,
-            	'name',f.name,
-            	'is_folder',f.is_folder,
-            	'parent_id',f.parent_id,
-            	'collection_id',f.collection_id
-        	)
-    	)  
-		from collection as c
-		left join file as f on c.pk_collection_id=f.collection_id
-		group by c.pk_collection_id, c.name
-		order by c.name asc, f.is_folder desc, f.name asc;
-		`,
+        	c.pk_collection_id,
+        	c.name,
+        	CASE
+        	when f.pk_file_id is null then json('[]')
+        	else
+        	json_group_array(
+        		json_object(
+        			'file_id',f.pk_file_id,
+        			'name',f.name,
+        			'is_folder',f.is_folder,
+        			'parent_id',f.parent_id,
+        			'collection_id',f.collection_id
+        		)
+        	)  
+            END
+        from collection as c
+        left join file as f on c.pk_collection_id=f.collection_id
+        group by c.pk_collection_id, c.name
+        order by c.name asc, f.is_folder desc, f.name asc;
+	`,
 	)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	// collections := []any{}
+	collections := []CollectionJoinType{}
 	for rows.Next() {
 		var collection CollectionJoinType
 		var filesStr string
-		var files []FileJoinType
+		var allFiles []FileJoinType
 		rows.Scan(&collection.CollectionId, &collection.Name, &filesStr)
 
-		err := json.Unmarshal([]byte(filesStr), &files)
+		err := json.Unmarshal([]byte(filesStr), &allFiles)
+		// for i := range allFiles {
+		// 	allFiles[i].Visited = false
+		// }
+
 		if err != nil {
 			return nil, err
 		}
 
+		for i := range allFiles {
+			if allFiles[i].ParentId == nil {
+				root := nestedFiles(allFiles, i)
+				collection.Files = append(collection.Files, root)
+			}
+		}
+
+		collections = append(collections, collection)
 	}
-	return nil, nil
+	return collections, nil
 }
 
 func (c *CollectionRepo) InsertCollection(name string) error {

@@ -29,3 +29,21 @@ func (c *CollectionApi) SelectAllCollections() ApiResponse[[]models.Collection] 
 	resp.Data = collections
 	return resp
 }
+
+func (c *CollectionApi) SelectAllCollectionsWithFiles() ApiResponse[[]repositories.CollectionJoinType] {
+	resp := ApiResponse[[]repositories.CollectionJoinType]{}
+
+	collections, err := c.Repositories.Collection.SelectAllCollectionsWithFiles()
+	if err != nil {
+		resp.Error = err.Error()
+		resp.Success = false
+		resp.Message = "Failed to fetch collections"
+		resp.Data = []repositories.CollectionJoinType{}
+		return resp
+	}
+
+	resp.Success = true
+	resp.Message = "Collections fetched successfully"
+	resp.Data = collections
+	return resp
+}

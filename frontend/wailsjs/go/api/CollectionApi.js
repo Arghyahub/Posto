@@ -5,3 +5,7 @@
 export function SelectAllCollections() {
   return window['go']['api']['CollectionApi']['SelectAllCollections']();
 }
+
+export function SelectAllCollectionsWithFiles() {
+  return window['go']['api']['CollectionApi']['SelectAllCollectionsWithFiles']();
+}

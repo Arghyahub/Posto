@@ -17,42 +17,16 @@ import FileUploadIcon from "@mui/icons-material/FileUpload";
 import FileDownloadIcon from "@mui/icons-material/FileDownload";
 import { useEffect, useState } from "react";
 import { models } from "../../wailsjs/go/models";
-import { SelectAllCollections } from "../../wailsjs/go/api/CollectionApi";
+import {
+  SelectAllCollections,
+  SelectAllCollectionsWithFiles,
+} from "../../wailsjs/go/api/CollectionApi";
 import FileExplorer from "./ui/file-explorer";
 import logo from "../assets/images/logo.png";
 
 const drawerWidth = 300;
 
-type FolderOrFileType =
-  | { is_folder: true; files: FileType[] }
-  | { is_folder: false };
-
-type FileType = FolderOrFileType & {
-  pk_file_id: number;
-  collection_id: number;
-  parent_id?: number;
-  name: string;
-  created_at: string;
-  updated_at: string;
-};
-
-interface CollectionType {
-  pk_collection_id: number;
-  name: string;
-  created_at: string;
-  updated_at: string;
-  files: FileType[];
-}
-
 export default function PermanentDrawerLeft() {
-  const [Collection, setCollection] = useState<CollectionType[]>([]);
-
-  useEffect(() => {
-    SelectAllCollections().then((res) => {
-      console.log("res : ", res);
-    });
-  }, []);
-
   return (
     <Box sx={{ display: "flex" }}>
       <Drawer
