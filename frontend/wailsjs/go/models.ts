@@ -1,5 +1,23 @@
 export namespace api {
 	
+	export class ApiResponse__int_ {
+	    success: boolean;
+	    message: string;
+	    error?: string;
+	    data?: number;
+	
+	    static createFrom(source: any = {}) {
+	        return new ApiResponse__int_(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.success = source["success"];
+	        this.message = source["message"];
+	        this.error = source["error"];
+	        this.data = source["data"];
+	    }
+	}
 	export class ApiResponse___posto_app_models_Collection_ {
 	    success: boolean;
 	    message: string;
@@ -253,6 +271,24 @@ export namespace repositories {
 		    }
 		    return a;
 		}
+	}
+	export class FileCreationParam {
+	    CollectionId: number;
+	    ParentId?: number;
+	    IsFolder: boolean;
+	    Name: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new FileCreationParam(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.CollectionId = source["CollectionId"];
+	        this.ParentId = source["ParentId"];
+	        this.IsFolder = source["IsFolder"];
+	        this.Name = source["Name"];
+	    }
 	}
 
 }

@@ -14,12 +14,14 @@ type ApiResponse[T any] struct {
 type Api struct {
 	Repositories  *repositories.Repositories
 	CollectionApi *CollectionApi
+	FileApi       *FileApi
 }
 
 func NewApi(repositories *repositories.Repositories) *Api {
 	return &Api{
 		Repositories:  repositories,
 		CollectionApi: NewCollectionApi(repositories),
+		FileApi:       NewFileApi(repositories),
 	}
 }
 

@@ -60,6 +60,7 @@ func main() {
 		Bind: []interface{}{
 			app,
 			Api.CollectionApi,
+			Api.FileApi,
 		},
 	})
 

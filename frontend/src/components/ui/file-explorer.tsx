@@ -22,13 +22,23 @@ import useQueryStore, {
 const FileSystemItem = ({
   file,
   depth,
+  collection_name
 }: {
   file: FileJoinType;
   depth: number;
+  collection_name: string;
 }) => {
-  const [open, setOpen] = React.useState(false);
+  const [open, setOpen] = React.useState(file?.is_open ?? false);
   const setCurrentDirSelection = useQueryStore(
     (state) => state.setCurrentDirSelection,
+  );
+  const CurrentDirSelection = useQueryStore(
+    (state) => state.CurrentDirSelection,
+  );
+
+  const isSelected = React.useMemo(
+    () => CurrentDirSelection?.file_id === file.file_id,
+    [CurrentDirSelection, file.file_id],
   );
 
   const handleClick = () => {
@@ -42,6 +52,7 @@ const FileSystemItem = ({
         parent_id: file.parent_id, // @ts-ignore
         is_folder: file.is_folder,
         type: file.is_folder ? "folder" : "file",
+        collection_name: collection_name,
       });
     }
   };
@@ -52,6 +63,7 @@ const FileSystemItem = ({
         disableRipple
         sx={{
           pl: 2 * depth,
+          bgcolor: isSelected ? "rgba(255, 255, 255, 0.05)" : "transparent",
           "&:hover": { bgcolor: "rgba(255, 255, 255, 0.1)" },
         }}
         onClick={handleClick}
@@ -85,6 +97,7 @@ const FileSystemItem = ({
                   key={childFile.file_id}
                   file={childFile}
                   depth={depth + 1}
+                  collection_name={collection_name}
                 />
               ))}
             </List>
@@ -100,9 +113,19 @@ const CollectionItem = ({
 }: {
   collection: CollectionNestedType;
 }) => {
-  const [open, setOpen] = React.useState(true); // Collections default open
+  const [open, setOpen] = React.useState(collection?.is_open ?? false); // Collections default open
   const setCurrentDirSelection = useQueryStore(
     (state) => state.setCurrentDirSelection,
+  );
+  const CurrentDirSelection = useQueryStore(
+    (state) => state.CurrentDirSelection,
+  );
+
+  const isSelected = React.useMemo(
+    () =>
+      CurrentDirSelection?.collection_id === collection.collection_id &&
+      CurrentDirSelection?.type === "collection",
+    [CurrentDirSelection, collection.collection_id],
   );
 
   const handleClick = () => {
@@ -111,6 +134,7 @@ const CollectionItem = ({
       setCurrentDirSelection({
         collection_id: collection.collection_id,
         type: "collection",
+        collection_name: collection.name,
       });
     }
   };
@@ -121,7 +145,7 @@ const CollectionItem = ({
         onClick={handleClick}
         disableRipple
         sx={{
-          backgroundColor: "rgba(255, 255, 255, 0.05)",
+          bgcolor: isSelected ? "rgba(255, 255, 255, 0.05)" : "transparent",
           "&:hover": { bgcolor: "rgba(255, 255, 255, 0.1)" },
         }}
       >
@@ -142,7 +166,7 @@ const CollectionItem = ({
         {collection?.files && (
           <List component="div" disablePadding>
             {collection.files.map((file) => (
-              <FileSystemItem key={file.file_id} file={file} depth={2} />
+              <FileSystemItem key={file.file_id} file={file} depth={2} collection_name={collection.name} />
             ))}
           </List>
         )}
@@ -174,7 +198,7 @@ export default function FileExplorer() {
   return (
     <List sx={{ width: "100%", bgcolor: "#27272a" }} component="nav">
       {CollectionInNestedForm.map((collection, index) => (
-        <React.Fragment key={collection.collection_id}>
+        <React.Fragment key={`collection-${collection.collection_id}`}>
           <CollectionItem collection={collection} />
           {index < CollectionInNestedForm.length - 1 && (
             <Divider sx={{ borderColor: "#52525c" }} />

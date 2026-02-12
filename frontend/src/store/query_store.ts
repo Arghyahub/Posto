@@ -10,12 +10,14 @@ export type FileJoinType = {
   collection_id?: number;
   is_folder: boolean;
   files?: FileJoinType[];
+  is_open?: boolean;
 };
 
 export type CollectionNestedType = {
   collection_id: number;
   name: string;
   files?: FileJoinType[];
+  is_open?: boolean;
 };
 
 // collection_id , collection name
@@ -78,6 +80,7 @@ function getCollectionInNestedForm(
 // ---------- Individual Selection ---------------
 export type CurrentDirSelectionType = {
   collection_id: number;
+  collection_name: string;
   file_id?: number; // If null then collection
   parent_id?: number; // If null then insertion into collection level
   is_folder?: number;

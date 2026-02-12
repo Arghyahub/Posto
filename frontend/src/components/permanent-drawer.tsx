@@ -24,6 +24,7 @@ import {
 import FileExplorer from "./ui/file-explorer";
 import logo from "../assets/images/logo.png";
 import useQueryStore from "../store/query_store";
+import {CreateFileOrFolder} from "../../wailsjs/go/api/FileApi"
 
 const drawerWidth = 300;
 
@@ -31,6 +32,40 @@ export default function PermanentDrawerLeft() {
   const CurrentDirSelection = useQueryStore(
     (state) => state.CurrentDirSelection,
   );
+  const Collections = useQueryStore((state) => state.Collections);
+  const setCollection = useQueryStore((state) => state.setCollection);
+
+  async function handleFileCreation({ is_folder }: { is_folder: boolean }) {
+    if (!CurrentDirSelection) return;
+    console.log(CurrentDirSelection)
+
+    let parent_id;
+    if (CurrentDirSelection.type == "file")
+      parent_id = CurrentDirSelection.parent_id
+    if (CurrentDirSelection.type == "folder")
+      parent_id = CurrentDirSelection.file_id
+
+    const resp = await CreateFileOrFolder({
+      CollectionId: CurrentDirSelection.collection_id,
+      ParentId: parent_id,
+      IsFolder: is_folder,
+      Name: is_folder ? "New Folder" : "New File",      
+    })
+
+    if (resp.success && resp.data) {
+      const newCollection = [...Collections]
+
+      newCollection.push({
+        collection_id: CurrentDirSelection.collection_id,
+        collection_name: CurrentDirSelection.collection_name,
+        file_id: resp.data,
+        file_name: is_folder ? "New Folder" : "New File",
+        is_folder: is_folder,
+        parent_id: parent_id,
+      })
+      setCollection(newCollection)
+    }
+  }
 
   return (
     <Box sx={{ display: "flex" }}>
@@ -84,6 +119,7 @@ export default function PermanentDrawerLeft() {
           <Tooltip title="New Folder" sx={{ marginLeft: "auto" }}>
             <IconButton
               size="small"
+              onClick={() => handleFileCreation({ is_folder: true })}
               sx={{ color: "#d4d4d8", "&.Mui-disabled": { color: "#71717a" } }}
               disabled={!CurrentDirSelection}
             >
@@ -93,6 +129,7 @@ export default function PermanentDrawerLeft() {
           <Tooltip title="New File">
             <IconButton
               size="small"
+              onClick={() => handleFileCreation({ is_folder: false })}
               sx={{ color: "#d4d4d8", "&.Mui-disabled": { color: "#71717a" } }}
               disabled={!CurrentDirSelection}
             >
