@@ -4,4 +4,6 @@ import {api} from '../models';
 
 export function SelectAllCollections():Promise<api.ApiResponse___posto_app_models_Collection_>;
 
-export function SelectAllCollectionsWithFiles():Promise<api.ApiResponse___posto_app_repositories_CollectionJoinType_>;
+export function SelectAllCollectionsWithFiles():Promise<api.ApiResponse___posto_app_repositories_CollectionJoinFileType_>;
+
+export function SelectAllCollectionsWithFilesNested():Promise<api.ApiResponse___posto_app_repositories_CollectionJoinType_>;

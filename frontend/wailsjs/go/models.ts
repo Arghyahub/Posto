@@ -36,6 +36,42 @@ export namespace api {
 		    return a;
 		}
 	}
+	export class ApiResponse___posto_app_repositories_CollectionJoinFileType_ {
+	    success: boolean;
+	    message: string;
+	    error?: string;
+	    data: repositories.CollectionJoinFileType[];
+	
+	    static createFrom(source: any = {}) {
+	        return new ApiResponse___posto_app_repositories_CollectionJoinFileType_(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.success = source["success"];
+	        this.message = source["message"];
+	        this.error = source["error"];
+	        this.data = this.convertValues(source["data"], repositories.CollectionJoinFileType);
+	    }
+	
+		convertValues(a: any, classs: any, asMap: boolean = false): any {
+		    if (!a) {
+		        return a;
+		    }
+		    if (a.slice && a.map) {
+		        return (a as any[]).map(elem => this.convertValues(elem, classs));
+		    } else if ("object" === typeof a) {
+		        if (asMap) {
+		            for (const key of Object.keys(a)) {
+		                a[key] = new classs(a[key]);
+		            }
+		            return a;
+		        }
+		        return new classs(a);
+		    }
+		    return a;
+		}
+	}
 	export class ApiResponse___posto_app_repositories_CollectionJoinType_ {
 	    success: boolean;
 	    message: string;
@@ -120,6 +156,28 @@ export namespace models {
 
 export namespace repositories {
 	
+	export class CollectionJoinFileType {
+	    collection_id: number;
+	    collection_name: string;
+	    file_id?: number;
+	    file_name?: string;
+	    is_folder?: boolean;
+	    parent_id?: number;
+	
+	    static createFrom(source: any = {}) {
+	        return new CollectionJoinFileType(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.collection_id = source["collection_id"];
+	        this.collection_name = source["collection_name"];
+	        this.file_id = source["file_id"];
+	        this.file_name = source["file_name"];
+	        this.is_folder = source["is_folder"];
+	        this.parent_id = source["parent_id"];
+	    }
+	}
 	export class FileJoinType {
 	    file_id?: number;
 	    name: string;

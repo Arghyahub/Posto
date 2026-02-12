@@ -10,9 +10,12 @@ import FolderIcon from "@mui/icons-material/Folder";
 import InsertDriveFileIcon from "@mui/icons-material/InsertDriveFile";
 import FolderOpenIcon from "@mui/icons-material/FolderOpen";
 import Divider from "@mui/material/Divider";
-import { SelectAllCollectionsWithFiles } from "../../../wailsjs/go/api/CollectionApi";
+import {
+  SelectAllCollectionsWithFiles,
+  SelectAllCollectionsWithFilesNested,
+} from "../../../wailsjs/go/api/CollectionApi";
 import useQueryStore, {
-  CollectionJoinType,
+  CollectionNestedType,
   FileJoinType,
 } from "../../store/query_store";
 
@@ -36,7 +39,7 @@ const FileSystemItem = ({
       setCurrentDirSelection({
         file_id: file.file_id,
         collection_id: file.collection_id,
-        parent_id: file.parent_id,
+        parent_id: file.parent_id, // @ts-ignore
         is_folder: file.is_folder,
         type: file.is_folder ? "folder" : "file",
       });
@@ -46,6 +49,7 @@ const FileSystemItem = ({
   return (
     <>
       <ListItemButton
+        disableRipple
         sx={{
           pl: 2 * depth,
           "&:hover": { bgcolor: "rgba(255, 255, 255, 0.1)" },
@@ -91,7 +95,11 @@ const FileSystemItem = ({
   );
 };
 
-const CollectionItem = ({ collection }: { collection: CollectionJoinType }) => {
+const CollectionItem = ({
+  collection,
+}: {
+  collection: CollectionNestedType;
+}) => {
   const [open, setOpen] = React.useState(true); // Collections default open
   const setCurrentDirSelection = useQueryStore(
     (state) => state.setCurrentDirSelection,
@@ -111,6 +119,7 @@ const CollectionItem = ({ collection }: { collection: CollectionJoinType }) => {
     <>
       <ListItemButton
         onClick={handleClick}
+        disableRipple
         sx={{
           backgroundColor: "rgba(255, 255, 255, 0.05)",
           "&:hover": { bgcolor: "rgba(255, 255, 255, 0.1)" },
@@ -143,23 +152,31 @@ const CollectionItem = ({ collection }: { collection: CollectionJoinType }) => {
 };
 
 export default function FileExplorer() {
-  const Collections = useQueryStore((state) => state.Collections);
+  const CollectionInNestedForm = useQueryStore(
+    (state) => state.CollectionInNestedForm,
+  );
   const setCollection = useQueryStore((state) => state.setCollection);
 
   React.useEffect(() => {
+    // SelectAllCollectionsWithFilesNested().then((res) => {
+    //   if (res.success && res.data) {
+    //     setCollection((res.data ?? []) as CollectionJoinType[]);
+    //   }
+    // });
+
     SelectAllCollectionsWithFiles().then((res) => {
       if (res.success && res.data) {
-        setCollection((res.data ?? []) as CollectionJoinType[]);
+        setCollection(res.data ?? []);
       }
     });
   }, []);
 
   return (
     <List sx={{ width: "100%", bgcolor: "#27272a" }} component="nav">
-      {Collections.map((collection, index) => (
+      {CollectionInNestedForm.map((collection, index) => (
         <React.Fragment key={collection.collection_id}>
           <CollectionItem collection={collection} />
-          {index < Collections.length - 1 && (
+          {index < CollectionInNestedForm.length - 1 && (
             <Divider sx={{ borderColor: "#52525c" }} />
           )}
         </React.Fragment>

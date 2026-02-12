@@ -47,8 +47,6 @@ func main() {
 	// Create api
 	Api := api.NewApi(Repositories)
 
-	Repositories.Collection.SelectAllCollectionsWithFiles()
-
 	// Create application with options
 	err = wails.Run(&options.App{
 		Title:  "posto",

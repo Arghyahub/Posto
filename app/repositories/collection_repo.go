@@ -69,7 +69,7 @@ func nestedFiles(files []FileJoinType, i int) FileJoinType {
 	return files[i]
 }
 
-func (c *CollectionRepo) SelectAllCollectionsWithFiles() ([]CollectionJoinType, error) {
+func (c *CollectionRepo) SelectAllCollectionsWithFilesNested() ([]CollectionJoinType, error) {
 	rows, err := c.DB.Query(`
 		Select 
         	c.pk_collection_id,
@@ -120,6 +120,45 @@ func (c *CollectionRepo) SelectAllCollectionsWithFiles() ([]CollectionJoinType, 
 			}
 		}
 
+		collections = append(collections, collection)
+	}
+	return collections, nil
+}
+
+type CollectionJoinFileType struct {
+	CollectionId   int     `json:"collection_id"`
+	CollectionName string  `json:"collection_name"`
+	FileId         *int    `json:"file_id"`
+	FileName       *string `json:"file_name"`
+	IsFolder       *bool   `json:"is_folder"`
+	ParentId       *int    `json:"parent_id"`
+}
+
+func (c *CollectionRepo) SelectAllCollectionJoinFiles() ([]CollectionJoinFileType, error) {
+	rows, err := c.DB.Query(`
+    SELECT 
+    	collection.pk_collection_id,
+    	collection.name as collection_name,
+    	file.pk_file_id,
+        file.name as file_name,
+        file.is_folder,
+        file.parent_id
+     FROM collection
+    left join file on collection.pk_collection_id = file.collection_id
+	order by collection.name
+	`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	collections := []CollectionJoinFileType{}
+	for rows.Next() {
+		var collection CollectionJoinFileType
+		err := rows.Scan(&collection.CollectionId, &collection.CollectionName, &collection.FileId, &collection.FileName, &collection.IsFolder, &collection.ParentId)
+		if err != nil {
+			return nil, err
+		}
 		collections = append(collections, collection)
 	}
 	return collections, nil

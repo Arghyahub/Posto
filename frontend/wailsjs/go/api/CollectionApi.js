@@ -9,3 +9,7 @@ export function SelectAllCollections() {
 export function SelectAllCollectionsWithFiles() {
   return window['go']['api']['CollectionApi']['SelectAllCollectionsWithFiles']();
 }
+
+export function SelectAllCollectionsWithFilesNested() {
+  return window['go']['api']['CollectionApi']['SelectAllCollectionsWithFilesNested']();
+}
