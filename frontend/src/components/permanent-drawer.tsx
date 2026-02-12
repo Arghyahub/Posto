@@ -23,10 +23,15 @@ import {
 } from "../../wailsjs/go/api/CollectionApi";
 import FileExplorer from "./ui/file-explorer";
 import logo from "../assets/images/logo.png";
+import useQueryStore from "../store/query_store";
 
 const drawerWidth = 300;
 
 export default function PermanentDrawerLeft() {
+  const CurrentDirSelection = useQueryStore(
+    (state) => state.CurrentDirSelection,
+  );
+
   return (
     <Box sx={{ display: "flex" }}>
       <Drawer
@@ -50,28 +55,47 @@ export default function PermanentDrawerLeft() {
         </div>
         <div className="flex flex-row gap-1 w-full items-center px-4 pb-2">
           <Tooltip title="Add Collection">
-            <IconButton size="small" sx={{ color: "#d4d4d8" }}>
+            <IconButton
+              size="small"
+              sx={{ color: "#d4d4d8", "&.Mui-disabled": { color: "#71717a" } }}
+            >
               <LibraryAddIcon fontSize="small" />
             </IconButton>
           </Tooltip>
           <Tooltip title="Import Collection">
-            <IconButton size="small" sx={{ color: "#d4d4d8" }}>
+            <IconButton
+              size="small"
+              sx={{ color: "#d4d4d8", "&.Mui-disabled": { color: "#71717a" } }}
+            >
               <FileUploadIcon fontSize="small" />
             </IconButton>
           </Tooltip>
           <Tooltip title="Export Collection">
-            <IconButton size="small" sx={{ color: "#d4d4d8" }}>
+            <IconButton
+              size="small"
+              sx={{ color: "#d4d4d8", "&.Mui-disabled": { color: "#71717a" } }}
+            >
               <FileDownloadIcon fontSize="small" />
             </IconButton>
           </Tooltip>
+
           <div className="ml-auto"></div>
+
           <Tooltip title="New Folder" sx={{ marginLeft: "auto" }}>
-            <IconButton size="small" sx={{ color: "#d4d4d8" }}>
+            <IconButton
+              size="small"
+              sx={{ color: "#d4d4d8", "&.Mui-disabled": { color: "#71717a" } }}
+              disabled={!CurrentDirSelection}
+            >
               <CreateNewFolderIcon fontSize="small" />
             </IconButton>
           </Tooltip>
           <Tooltip title="New File">
-            <IconButton size="small" sx={{ color: "#d4d4d8" }}>
+            <IconButton
+              size="small"
+              sx={{ color: "#d4d4d8", "&.Mui-disabled": { color: "#71717a" } }}
+              disabled={!CurrentDirSelection}
+            >
               <NoteAddIcon fontSize="small" />
             </IconButton>
           </Tooltip>

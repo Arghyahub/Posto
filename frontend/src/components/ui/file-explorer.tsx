@@ -11,25 +11,10 @@ import InsertDriveFileIcon from "@mui/icons-material/InsertDriveFile";
 import FolderOpenIcon from "@mui/icons-material/FolderOpen";
 import Divider from "@mui/material/Divider";
 import { SelectAllCollectionsWithFiles } from "../../../wailsjs/go/api/CollectionApi";
-
-type FolderOrFileType =
-  | { is_folder: 1; files?: FileJoinType[] }
-  | { is_folder: 0 };
-
-export type CollectionJoinType = {
-  collection_id?: number;
-  name: string;
-  files?: FileJoinType[];
-};
-
-export type FileJoinType = FolderOrFileType & {
-  file_id?: number;
-  name: string;
-  is_folder: number;
-  parent_id?: any;
-  collection_id?: number;
-  // files?: FileJoinType[];
-};
+import useQueryStore, {
+  CollectionJoinType,
+  FileJoinType,
+} from "../../store/query_store";
 
 const FileSystemItem = ({
   file,
@@ -39,10 +24,22 @@ const FileSystemItem = ({
   depth: number;
 }) => {
   const [open, setOpen] = React.useState(false);
+  const setCurrentDirSelection = useQueryStore(
+    (state) => state.setCurrentDirSelection,
+  );
 
   const handleClick = () => {
     if (file.is_folder) {
       setOpen(!open);
+    }
+    if (file.collection_id) {
+      setCurrentDirSelection({
+        file_id: file.file_id,
+        collection_id: file.collection_id,
+        parent_id: file.parent_id,
+        is_folder: file.is_folder,
+        type: file.is_folder ? "folder" : "file",
+      });
     }
   };
 
@@ -96,9 +93,18 @@ const FileSystemItem = ({
 
 const CollectionItem = ({ collection }: { collection: CollectionJoinType }) => {
   const [open, setOpen] = React.useState(true); // Collections default open
+  const setCurrentDirSelection = useQueryStore(
+    (state) => state.setCurrentDirSelection,
+  );
 
   const handleClick = () => {
     setOpen(!open);
+    if (collection.collection_id) {
+      setCurrentDirSelection({
+        collection_id: collection.collection_id,
+        type: "collection",
+      });
+    }
   };
 
   return (
@@ -137,7 +143,8 @@ const CollectionItem = ({ collection }: { collection: CollectionJoinType }) => {
 };
 
 export default function FileExplorer() {
-  const [Collection, setCollection] = React.useState<CollectionJoinType[]>([]);
+  const Collections = useQueryStore((state) => state.Collections);
+  const setCollection = useQueryStore((state) => state.setCollection);
 
   React.useEffect(() => {
     SelectAllCollectionsWithFiles().then((res) => {
@@ -149,10 +156,10 @@ export default function FileExplorer() {
 
   return (
     <List sx={{ width: "100%", bgcolor: "#27272a" }} component="nav">
-      {Collection.map((collection, index) => (
+      {Collections.map((collection, index) => (
         <React.Fragment key={collection.collection_id}>
           <CollectionItem collection={collection} />
-          {index < Collection.length - 1 && (
+          {index < Collections.length - 1 && (
             <Divider sx={{ borderColor: "#52525c" }} />
           )}
         </React.Fragment>
