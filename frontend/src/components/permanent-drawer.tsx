@@ -34,6 +34,9 @@ export default function PermanentDrawerLeft() {
   );
   const Collections = useQueryStore((state) => state.Collections);
   const setCollection = useQueryStore((state) => state.setCollection);
+  const setCurrentDirSelection = useQueryStore(
+    (state) => state.setCurrentDirSelection,
+  );
 
   async function handleFileCreation({ is_folder }: { is_folder: boolean }) {
     if (!CurrentDirSelection) return;
@@ -64,6 +67,14 @@ export default function PermanentDrawerLeft() {
         parent_id: parent_id,
       })
       setCollection(newCollection)
+      setCurrentDirSelection({
+        collection_id: CurrentDirSelection.collection_id,
+        collection_name: CurrentDirSelection.collection_name,
+        type: is_folder ? "folder" : "file",
+        file_id: resp.data,
+        is_folder: is_folder,
+        parent_id: parent_id
+      })
     }
   }
 

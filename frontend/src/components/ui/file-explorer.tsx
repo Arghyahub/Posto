@@ -28,7 +28,7 @@ const FileSystemItem = ({
   depth: number;
   collection_name: string;
 }) => {
-  const [open, setOpen] = React.useState(file?.is_open ?? false);
+  const [open, setOpen] = React.useState(false);
   const setCurrentDirSelection = useQueryStore(
     (state) => state.setCurrentDirSelection,
   );
@@ -56,6 +56,11 @@ const FileSystemItem = ({
       });
     }
   };
+
+  React.useEffect(() => {
+    if (CurrentDirSelection && CurrentDirSelection?.parent_id==file?.file_id)
+      setOpen(true)
+  },[CurrentDirSelection,file])
 
   return (
     <>
@@ -113,7 +118,7 @@ const CollectionItem = ({
 }: {
   collection: CollectionNestedType;
 }) => {
-  const [open, setOpen] = React.useState(collection?.is_open ?? false); // Collections default open
+  const [open, setOpen] = React.useState(false); // Collections default open
   const setCurrentDirSelection = useQueryStore(
     (state) => state.setCurrentDirSelection,
   );
@@ -127,6 +132,11 @@ const CollectionItem = ({
       CurrentDirSelection?.type === "collection",
     [CurrentDirSelection, collection.collection_id],
   );
+
+  React.useEffect(() => {
+    if (CurrentDirSelection && collection.collection_id==CurrentDirSelection.collection_id)
+      setOpen(true)
+  },[CurrentDirSelection,collection])
 
   const handleClick = () => {
     setOpen(!open);
