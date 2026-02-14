@@ -58,9 +58,9 @@ const FileSystemItem = ({
   };
 
   React.useEffect(() => {
-    if (CurrentDirSelection && CurrentDirSelection?.parent_id==file?.file_id)
+    if (CurrentDirSelection && CurrentDirSelection?.parent_id==file?.file_id && !open)
       setOpen(true)
-  },[CurrentDirSelection,file])
+  },[CurrentDirSelection,file,open])
 
   return (
     <>
@@ -134,9 +134,9 @@ const CollectionItem = ({
   );
 
   React.useEffect(() => {
-    if (CurrentDirSelection && collection.collection_id==CurrentDirSelection.collection_id)
+    if (CurrentDirSelection?.file_id && collection.collection_id==CurrentDirSelection?.collection_id && !open)
       setOpen(true)
-  },[CurrentDirSelection,collection])
+  },[CurrentDirSelection,collection,open])
 
   const handleClick = () => {
     setOpen(!open);
