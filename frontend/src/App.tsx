@@ -3,6 +3,7 @@ import logo from './assets/images/logo-universal.png';
 import './App.css';
 import {Greet} from "../wailsjs/go/main/App";
 import PermanentDrawerLeft from './components/permanent-drawer';
+import TabsComponent from './components/tabs-component';
 
 function App() {
     const [resultText, setResultText] = useState("Please enter your name below 👇");
@@ -15,9 +16,9 @@ function App() {
     }
 
     return (
-        <div id="App" className='flex flex-col h-[100svh] bg-zinc-800 border-zinc-600' >
+        <div id="App" className='flex flex-row h-[100svh] bg-zinc-800 border-zinc-600' >
             <PermanentDrawerLeft/>
-            <div className="flex flex-col w-full h-full">ok</div>
+            <TabsComponent/>
         </div>
     )
 }

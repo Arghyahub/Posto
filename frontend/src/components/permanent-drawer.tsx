@@ -79,7 +79,7 @@ export default function PermanentDrawerLeft() {
   }
 
   return (
-    <Box sx={{ display: "flex" }}>
+    <Box sx={{ width: drawerWidth, flexShrink: 0 }}>
       <Drawer
         sx={{
           width: drawerWidth,

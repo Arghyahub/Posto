@@ -35,6 +35,8 @@ const FileSystemItem = ({
   const CurrentDirSelection = useQueryStore(
     (state) => state.CurrentDirSelection,
   );
+  const FileTabsOpen = useQueryStore((state) => state.FileTabsOpen);
+  const OpenFileTab = useQueryStore((state) => state.OpenFileTab);
 
   const isSelected = React.useMemo(
     () => CurrentDirSelection?.file_id === file.file_id,
@@ -42,19 +44,26 @@ const FileSystemItem = ({
   );
 
   const handleClick = () => {
+    if (!file.file_id || !file.collection_id) return;
+
     if (file.is_folder) {
       setOpen(!open);
     }
-    if (file.collection_id) {
-      setCurrentDirSelection({
+    else {
+      OpenFileTab({
         file_id: file.file_id,
-        collection_id: file.collection_id,
-        parent_id: file.parent_id, // @ts-ignore
-        is_folder: file.is_folder,
-        type: file.is_folder ? "folder" : "file",
-        collection_name: collection_name,
+        name: file.name,
       });
     }
+
+    setCurrentDirSelection({
+      file_id: file.file_id,
+      collection_id: file.collection_id,
+      parent_id: file.parent_id, // @ts-ignore
+      is_folder: file.is_folder,
+      type: file.is_folder ? "folder" : "file",
+      collection_name: collection_name,
+    });
   };
 
   React.useEffect(() => {

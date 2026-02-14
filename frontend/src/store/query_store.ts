@@ -85,6 +85,18 @@ export type CurrentDirSelectionType = {
   type: "collection" | "file" | "folder";
 } | null;
 
+// ----------- File Selection --------------------
+export type FileTabOpenType = {
+  file_id: number;
+  name: string;
+  url?: string;
+  method?: "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
+  params?: string;
+  body?: Record<any, any>;
+  headers?: Record<any, any>;
+  response?: any;
+};
+
 interface State {
   Collections: repositories.CollectionJoinFileType[];
   setCollection: (Collections: repositories.CollectionJoinFileType[]) => void;
@@ -93,13 +105,14 @@ interface State {
   setCurrentDirSelection: (
     CurrentDirSelection: CurrentDirSelectionType,
   ) => void;
-  //   count: number;
-  //   increment: () => void;
-  //   decrement: () => void;
-  //   reset: () => void;
+  FileTabsOpen: FileTabOpenType[];
+  OpenFileTab: (fileTab: FileTabOpenType) => void;
+  CloseFileTab: (file_id: number) => void;
+  setFileTabsOpen: (FileTabsOpen: FileTabOpenType[]) => void;
+  FileIdsOpenHistory: number[];
 }
 
-const useQueryStore = create<State>((set) => ({
+const useQueryStore = create<State>((set, get) => ({
   Collections: [],
   setCollection: (Collections) => {
     const nestedCollection = getCollectionInNestedForm(Collections);
@@ -108,6 +121,39 @@ const useQueryStore = create<State>((set) => ({
   CollectionInNestedForm: [],
   CurrentDirSelection: null,
   setCurrentDirSelection: (CurrentDirSelection) => set({ CurrentDirSelection }),
+  FileTabsOpen: [],
+  OpenFileTab: (fileTab) => {
+    const FileTabsOpen = get().FileTabsOpen;
+    const FileIdx = FileTabsOpen.findIndex(
+      (tab) => tab.file_id === fileTab.file_id,
+    );
+    if (FileIdx == -1) {
+      set({
+        FileTabsOpen: [...FileTabsOpen, fileTab],
+        FileIdsOpenHistory: [...get().FileIdsOpenHistory, fileTab.file_id],
+      });
+    } else {
+      const FileIdHistory = get().FileIdsOpenHistory.filter(
+        (id) => id !== fileTab.file_id,
+      );
+      set({ FileIdsOpenHistory: [...FileIdHistory, fileTab.file_id] });
+    }
+  },
+  CloseFileTab: (file_id) => {
+    const FileTabsOpen = get().FileTabsOpen;
+    const FileIdx = FileTabsOpen.findIndex((tab) => tab.file_id === file_id);
+    if (FileIdx !== -1) {
+      FileTabsOpen.splice(FileIdx, 1);
+      set({ FileTabsOpen: [...FileTabsOpen] });
+
+      const FileIdHistory = get().FileIdsOpenHistory.filter(
+        (id) => id !== file_id,
+      );
+      set({ FileIdsOpenHistory: [...FileIdHistory] });
+    }
+  },
+  setFileTabsOpen: (FileTabsOpen) => set({ FileTabsOpen }),
+  FileIdsOpenHistory: [],
 }));
 
 export default useQueryStore;
