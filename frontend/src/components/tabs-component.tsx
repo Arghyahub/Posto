@@ -10,8 +10,10 @@ import {
   Paper,
   Select,
   Typography,
+  InputBase,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
+import { useThrottledCallback } from 'use-debounce';
 
 type Props = {};
 
@@ -48,6 +50,16 @@ const TabsComponent = (props: Props) => {
     const updatedTabs = FileTabsOpen.map((tab) => {
       if (tab.file_id === lastFileOpen.file_id) {
         return { ...tab, [field]: value };
+      }
+      return tab;
+    });
+    setFileTabsOpen(updatedTabs);
+  };
+
+  const handleRename = (fileId: number, newName: string) => {
+    const updatedTabs = FileTabsOpen.map((tab) => {
+      if (tab.file_id === fileId) {
+        return { ...tab, name: newName };
       }
       return tab;
     });
@@ -91,15 +103,28 @@ const TabsComponent = (props: Props) => {
             },
             "& .MuiTabs-indicator": { backgroundColor: "#3b82f6" },
           }}
-        >
+          >
           {FileTabsOpen.map((tab) => (
             <Tab
+              disableRipple
               key={tab.file_id}
               label={
                 <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                  <Typography variant="body2" noWrap sx={{ maxWidth: 150, color: "inherit" }}>
-                    {tab.name}
-                  </Typography>
+                  <InputBase
+                    value={tab.name}
+                    onChange={(e) => handleRename(tab.file_id, e.target.value)}
+                    onClick={(e) => e.stopPropagation()}
+                    onKeyDown={(e) => e.stopPropagation()}
+                    sx={{
+                      maxWidth: 150,
+                      color: "inherit",
+                      fontSize: "0.875rem",
+                      "& .MuiInputBase-input": {
+                        padding: 0,
+                        textOverflow: "ellipsis",
+                      },
+                    }}
+                  />
                   <IconButton
                     size="small"
                     component="span"
@@ -131,6 +156,25 @@ const TabsComponent = (props: Props) => {
             value={lastFileOpen.method || "GET"}
             onChange={(e) => handleRequestChange("method", e.target.value)}
             size="small"
+            MenuProps={{
+              PaperProps: {
+                sx: {
+                  bgcolor: "#252526",
+                  color: "white",
+                  "& .MuiMenuItem-root": {
+                    "&:hover": {
+                      bgcolor: "#3e3e42",
+                    },
+                    "&.Mui-selected": {
+                      bgcolor: "#37373d",
+                      "&:hover": {
+                        bgcolor: "#3e3e42",
+                      },
+                    },
+                  },
+                },
+              },
+            }}
             sx={{
               width: 120,
               color: "white",
@@ -181,17 +225,17 @@ const TabsComponent = (props: Props) => {
           </Tabs>
           <Box sx={{ p: 2, flexGrow: 1, border: "1px solid #404040", borderTop: 0 }}>
             {innerTab === 0 && (
-              <Typography variant="body2" color="text.secondary">
+              <Typography variant="body2" color="white">
                 Query params key-value pairs (Coming soon)
               </Typography>
             )}
             {innerTab === 1 && (
-              <Typography variant="body2" color="text.secondary">
+              <Typography variant="body2" color="white">
                 Header key-value pairs (Coming soon)
               </Typography>
             )}
             {innerTab === 2 && (
-              <Typography variant="body2" color="text.secondary">
+              <Typography variant="body2" color="white">
                 Body content (JSON/Form) (Coming soon)
               </Typography>
             )}
