@@ -11,5 +11,9 @@ CREATE TABLE IF NOT EXISTS file (
     is_folder BOOLEAN NOT NULL DEFAULT TRUE,
     parent_id INTEGER REFERENCES file(pk_file_id),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    method TEXT,
+    url TEXT,
+    headers TEXT,
+    body TEXT
 );

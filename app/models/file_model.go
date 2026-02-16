@@ -10,4 +10,8 @@ type File struct {
 	ParentId     int64     `json:"parent_id"`
 	CreatedAt    time.Time `json:"created_at"`
 	UpdatedAt    time.Time `json:"updated_at"`
+	Method       *string   `json:"method"`
+	Url          *string   `json:"url"`
+	Headers      *string   `json:"headers"`
+	Body         *string   `json:"body"`
 }

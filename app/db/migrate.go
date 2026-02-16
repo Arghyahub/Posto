@@ -12,6 +12,7 @@ import (
 var migrationsFS embed.FS
 
 func Migrate() error {
+	fmt.Println("Started migration")
 	dbConn := DB
 	if dbConn == nil {
 		return fmt.Errorf("database connection not initialized")
@@ -37,12 +38,16 @@ func Migrate() error {
 		migration_files = append(migration_files, file.Name())
 	}
 
+	fmt.Println("Migration files:", migration_files)
+
 	// sort files by name
 	sort.Strings(migration_files)
 
 	if len(migration_files) == 0 {
 		return nil
 	}
+
+	fmt.Println("Migration files to apply:", migration_files)
 
 	// Create migration talbe if not exist
 	_, err = dbConn.Exec(`
@@ -75,12 +80,16 @@ func Migrate() error {
 		}
 	}
 
+	fmt.Println("Latest migration:", latest_migration_name)
+
 	migrations_to_apply := []string{}
 	for _, migration_file := range migration_files {
 		if migration_file > latest_migration_name {
 			migrations_to_apply = append(migrations_to_apply, migration_file)
 		}
 	}
+
+	fmt.Println("Migrations to apply:", migrations_to_apply)
 
 	for _, migration_file := range migrations_to_apply {
 		file_path := path.Join("migrations", migration_file)
