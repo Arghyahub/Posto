@@ -2,8 +2,8 @@ import {useState} from 'react';
 import logo from './assets/images/logo-universal.png';
 import './App.css';
 import {Greet} from "../wailsjs/go/main/App";
-import PermanentDrawerLeft from './components/permanent-drawer';
-import TabsComponent from './components/tabs-component';
+import PermanentDrawerLeft from './components/left-sidebar/permanent-drawer';
+import TabsComponent from './components/tabs-panes/tabs-component';
 
 function App() {
     const [resultText, setResultText] = useState("Please enter your name below 👇");

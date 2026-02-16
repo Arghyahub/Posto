@@ -12,7 +12,6 @@ import FolderOpenIcon from "@mui/icons-material/FolderOpen";
 import Divider from "@mui/material/Divider";
 import {
   SelectAllCollectionsWithFiles,
-  SelectAllCollectionsWithFilesNested,
 } from "../../../wailsjs/go/api/CollectionApi";
 import useQueryStore, {
   CollectionNestedType,

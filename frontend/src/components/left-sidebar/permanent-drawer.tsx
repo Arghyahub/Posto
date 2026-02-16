@@ -1,13 +1,6 @@
 import Box from "@mui/material/Box";
 import Drawer from "@mui/material/Drawer";
-import List from "@mui/material/List";
 import Divider from "@mui/material/Divider";
-import ListItem from "@mui/material/ListItem";
-import ListItemButton from "@mui/material/ListItemButton";
-import ListItemIcon from "@mui/material/ListItemIcon";
-import ListItemText from "@mui/material/ListItemText";
-import InboxIcon from "@mui/icons-material/MoveToInbox";
-import MailIcon from "@mui/icons-material/Mail";
 import IconButton from "@mui/material/IconButton";
 import Tooltip from "@mui/material/Tooltip";
 import LibraryAddIcon from "@mui/icons-material/LibraryAdd";
@@ -15,16 +8,10 @@ import CreateNewFolderIcon from "@mui/icons-material/CreateNewFolder";
 import NoteAddIcon from "@mui/icons-material/NoteAdd";
 import FileUploadIcon from "@mui/icons-material/FileUpload";
 import FileDownloadIcon from "@mui/icons-material/FileDownload";
-import { useEffect, useState } from "react";
-import { models } from "../../wailsjs/go/models";
-import {
-  SelectAllCollections,
-  SelectAllCollectionsWithFiles,
-} from "../../wailsjs/go/api/CollectionApi";
-import FileExplorer from "./ui/file-explorer";
-import logo from "../assets/images/logo.png";
-import useQueryStore from "../store/query_store";
-import {CreateFileOrFolder} from "../../wailsjs/go/api/FileApi"
+import FileExplorer from "./file-explorer";
+import useQueryStore from "../../store/query_store";
+import {CreateFileOrFolder} from "../../../wailsjs/go/api/FileApi"
+import logo from "../../assets/images/logo.png"
 
 const drawerWidth = 300;
 
