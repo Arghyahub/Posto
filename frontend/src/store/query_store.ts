@@ -7,7 +7,7 @@ export type FileJoinType = {
   file_id?: number;
   name: string;
   parent_id?: any;
-  collection_id?: number;
+  collection_id: number;
   is_folder: boolean;
   files?: FileJoinType[];
 };

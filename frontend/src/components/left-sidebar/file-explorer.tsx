@@ -10,9 +10,17 @@ import FolderIcon from "@mui/icons-material/Folder";
 import InsertDriveFileIcon from "@mui/icons-material/InsertDriveFile";
 import FolderOpenIcon from "@mui/icons-material/FolderOpen";
 import Divider from "@mui/material/Divider";
-import {
-  SelectAllCollectionsWithFiles,
-} from "../../../wailsjs/go/api/CollectionApi";
+import EditIcon from "@mui/icons-material/Edit";
+import Menu from "@mui/material/Menu";
+import MenuItem from "@mui/material/MenuItem";
+import Dialog from "@mui/material/Dialog";
+import DialogTitle from "@mui/material/DialogTitle";
+import DialogContent from "@mui/material/DialogContent";
+import DialogActions from "@mui/material/DialogActions";
+import Button from "@mui/material/Button";
+import TextField from "@mui/material/TextField";
+
+import { SelectAllCollectionsWithFiles } from "../../../wailsjs/go/api/CollectionApi";
 import useQueryStore, {
   CollectionNestedType,
   FileJoinType,
@@ -21,11 +29,16 @@ import useQueryStore, {
 const FileSystemItem = ({
   file,
   depth,
-  collection_name
+  collection_name,
+  onContextMenu,
 }: {
   file: FileJoinType;
   depth: number;
   collection_name: string;
+  onContextMenu: (
+    event: React.MouseEvent<HTMLElement>,
+    item: FileJoinType,
+  ) => void;
 }) => {
   const [open, setOpen] = React.useState(false);
   const setCurrentDirSelection = useQueryStore(
@@ -47,8 +60,7 @@ const FileSystemItem = ({
 
     if (file.is_folder) {
       setOpen(!open);
-    }
-    else {
+    } else {
       OpenFileTab({
         file_id: file.file_id,
         name: file.name,
@@ -66,9 +78,13 @@ const FileSystemItem = ({
   };
 
   React.useEffect(() => {
-    if (CurrentDirSelection && CurrentDirSelection?.parent_id==file?.file_id && !open)
-      setOpen(true)
-  },[CurrentDirSelection,file,open])
+    if (
+      CurrentDirSelection &&
+      CurrentDirSelection?.parent_id == file?.file_id &&
+      !open
+    )
+      setOpen(true);
+  }, [CurrentDirSelection, file, open]);
 
   return (
     <>
@@ -111,6 +127,7 @@ const FileSystemItem = ({
                   file={childFile}
                   depth={depth + 1}
                   collection_name={collection_name}
+                  onContextMenu={onContextMenu}
                 />
               ))}
             </List>
@@ -123,8 +140,13 @@ const FileSystemItem = ({
 
 const CollectionItem = ({
   collection,
+  onContextMenu,
 }: {
   collection: CollectionNestedType;
+  onContextMenu: (
+    event: React.MouseEvent<HTMLElement>,
+    item: CollectionNestedType,
+  ) => void;
 }) => {
   const [open, setOpen] = React.useState(false); // Collections default open
   const setCurrentDirSelection = useQueryStore(
@@ -142,9 +164,13 @@ const CollectionItem = ({
   );
 
   React.useEffect(() => {
-    if (CurrentDirSelection?.file_id && collection.collection_id==CurrentDirSelection?.collection_id && !open)
-      setOpen(true)
-  },[CurrentDirSelection,collection,open])
+    if (
+      CurrentDirSelection?.file_id &&
+      collection.collection_id == CurrentDirSelection?.collection_id &&
+      !open
+    )
+      setOpen(true);
+  }, [CurrentDirSelection, collection, open]);
 
   const handleClick = () => {
     setOpen(!open);
@@ -160,6 +186,7 @@ const CollectionItem = ({
   return (
     <>
       <ListItemButton
+        onContextMenu={(e) => onContextMenu(e, collection)}
         onClick={handleClick}
         disableRipple
         sx={{
@@ -184,7 +211,17 @@ const CollectionItem = ({
         {collection?.files && (
           <List component="div" disablePadding>
             {collection.files.map((file) => (
-              <FileSystemItem key={file.file_id} file={file} depth={2} collection_name={collection.name} />
+              <FileSystemItem
+                key={file.file_id}
+                file={file}
+                depth={2}
+                collection_name={collection.name}
+                onContextMenu={(e, item) => {
+                  if (item.collection_id) {
+                    onContextMenu(e, item);
+                  }
+                }}
+              />
             ))}
           </List>
         )}
@@ -198,6 +235,46 @@ export default function FileExplorer() {
     (state) => state.CollectionInNestedForm,
   );
   const setCollection = useQueryStore((state) => state.setCollection);
+  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+  const [selectedItem, setSelectedItem] = React.useState<
+    FileJoinType | CollectionNestedType | null
+  >(null);
+  const [renameDialogOpen, setRenameDialogOpen] = React.useState(false);
+  const [newName, setNewName] = React.useState("");
+  const open = Boolean(anchorEl);
+
+  const handleContextMenu = (
+    event: React.MouseEvent<HTMLElement>,
+    item: FileJoinType | CollectionNestedType,
+  ) => {
+    event.preventDefault();
+    event.stopPropagation();
+    setAnchorEl(event.currentTarget);
+    setSelectedItem(item);
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleRenameClick = () => {
+    if (selectedItem) {
+      setNewName(selectedItem.name);
+      setRenameDialogOpen(true);
+      handleClose();
+    }
+  };
+
+  const handleRenameClose = () => {
+    setRenameDialogOpen(false);
+    setNewName("");
+  };
+
+  const handleRenameSave = () => {
+    console.log("Renaming item:", selectedItem);
+    console.log("New name:", newName);
+    handleRenameClose();
+  };
 
   React.useEffect(() => {
     // SelectAllCollectionsWithFilesNested().then((res) => {
@@ -214,15 +291,124 @@ export default function FileExplorer() {
   }, []);
 
   return (
-    <List sx={{ width: "100%", bgcolor: "#27272a" }} component="nav">
-      {CollectionInNestedForm.map((collection, index) => (
-        <React.Fragment key={`collection-${collection.collection_id}`}>
-          <CollectionItem collection={collection} />
-          {index < CollectionInNestedForm.length - 1 && (
-            <Divider sx={{ borderColor: "#52525c" }} />
-          )}
-        </React.Fragment>
-      ))}
-    </List>
+    <>
+      <List sx={{ width: "100%", bgcolor: "#27272a" }} component="nav">
+        {CollectionInNestedForm.map((collection, index) => (
+          <React.Fragment key={`collection-${collection.collection_id}`}>
+            <CollectionItem
+              collection={collection}
+              onContextMenu={handleContextMenu}
+            />
+            {index < CollectionInNestedForm.length - 1 && (
+              <Divider sx={{ borderColor: "#52525c" }} />
+            )}
+          </React.Fragment>
+        ))}
+      </List>
+
+      <Menu
+        id="basic-menu"
+        anchorEl={anchorEl}
+        open={open}
+        onClose={handleClose}
+        anchorOrigin={{
+          vertical: "bottom",
+          horizontal: "right",
+        }}
+        transformOrigin={{
+          vertical: "top",
+          horizontal: "right",
+        }}
+        slotProps={{
+          list: {
+            "aria-labelledby": "basic-button",
+            sx: { p: 0.5 },
+          },
+          paper: {
+            elevation: 8,
+            sx: {
+              bgcolor: "#27272a",
+              color: "#e4e4e7",
+              border: "1px solid #3f3f46",
+              borderRadius: "8px",
+              boxShadow:
+                "0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -1px rgba(0, 0, 0, 0.3)",
+              minWidth: "140px",
+            },
+          },
+        }}
+      >
+        <MenuItem
+          onClick={handleRenameClick}
+          sx={{
+            borderRadius: "6px",
+            fontSize: "0.875rem",
+            mx: 0.5,
+            color: "#e4e4e7",
+            "&:hover": { bgcolor: "rgba(255, 255, 255, 0.08)" },
+          }}
+        >
+          <ListItemIcon sx={{ minWidth: "28px !important", color: "inherit" }}>
+            <EditIcon fontSize="small" style={{ fontSize: "1.1rem" }} />
+          </ListItemIcon>
+          Rename
+        </MenuItem>
+      </Menu>
+
+      <Dialog
+        open={renameDialogOpen}
+        onClose={handleRenameClose}
+        PaperProps={{
+          sx: {
+            bgcolor: "#27272a",
+            color: "white",
+            border: "1px solid #52525c",
+          },
+        }}
+      >
+        <DialogTitle sx={{ color: "white" }}>Rename</DialogTitle>
+        <DialogContent sx={{ width: 400 }}>
+          <TextField
+            autoFocus
+            margin="dense"
+            label="Name"
+            type="text"
+            fullWidth
+            variant="outlined"
+            value={newName}
+            onChange={(e) => setNewName(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                handleRenameSave();
+              }
+            }}
+            sx={{
+              "& .MuiInputBase-input": { color: "white" },
+              "& .MuiInputLabel-root": { color: "#a1a1aa" },
+              "& .MuiInputLabel-root.Mui-focused": { color: "#3b82f6" },
+              "& .MuiOutlinedInput-root": {
+                "& fieldset": { borderColor: "#52525c" },
+                "&:hover fieldset": { borderColor: "#a1a1aa" },
+                "&.Mui-focused fieldset": { borderColor: "#3b82f6" },
+              },
+            }}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleRenameClose} sx={{ color: "white" }}>
+            Cancel
+          </Button>
+          <Button
+            onClick={handleRenameSave}
+            sx={{
+              color: "#60a5fa",
+              "&:hover": { color: "#93c5fd" },
+            }}
+          >
+            Save
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </>
   );
 }
