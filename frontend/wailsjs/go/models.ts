@@ -144,6 +144,24 @@ export namespace api {
 	        this.data = source["data"];
 	    }
 	}
+	export class ApiResponse_int_ {
+	    success: boolean;
+	    message: string;
+	    error?: string;
+	    data: number;
+	
+	    static createFrom(source: any = {}) {
+	        return new ApiResponse_int_(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.success = source["success"];
+	        this.message = source["message"];
+	        this.error = source["error"];
+	        this.data = source["data"];
+	    }
+	}
 
 }
 

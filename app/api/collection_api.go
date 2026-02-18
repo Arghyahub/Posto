@@ -65,3 +65,20 @@ func (c *CollectionApi) SelectAllCollectionsWithFiles() ApiResponse[[]repositori
 	resp.Data = collections
 	return resp
 }
+
+func (c *CollectionApi) InsertCollection(name string) ApiResponse[int] {
+	resp := ApiResponse[int]{}
+	id, err := c.Repositories.Collection.InsertCollection(name)
+	if err != nil {
+		resp.Error = err.Error()
+		resp.Message = "Unable to create the collection"
+		resp.Success = false
+		resp.Data = -1
+	} else {
+		resp.Message = "Collection created successfully"
+		resp.Success = true
+		resp.Data = id
+	}
+
+	return resp
+}

@@ -19,8 +19,11 @@ import FileExplorer from "./file-explorer";
 import useQueryStore from "../../store/query_store";
 import { CreateFileOrFolder } from "../../../wailsjs/go/api/FileApi";
 import logo from "../../assets/images/logo.png";
+import { InsertCollection } from "../../../wailsjs/go/api/CollectionApi";
 
 const drawerWidth = 300;
+
+type FileType = "collection" | "file" | "folder";
 
 export default function PermanentDrawerLeft() {
   const CurrentDirSelection = useQueryStore(
@@ -34,10 +37,10 @@ export default function PermanentDrawerLeft() {
 
   const [open, setOpen] = useState(false);
   const [itemName, setItemName] = useState("");
-  const [isFolderCreation, setIsFolderCreation] = useState(false);
+  const [isFileType, setIsFileType] = useState<FileType>();
 
-  const handleOpen = (isFolder: boolean) => {
-    setIsFolderCreation(isFolder);
+  const handleOpen = (isFolder: FileType) => {
+    setIsFileType(isFolder);
     setItemName(""); // Reset name or set default?
     setOpen(true);
   };
@@ -57,13 +60,14 @@ export default function PermanentDrawerLeft() {
     if (CurrentDirSelection.type == "folder")
       parent_id = CurrentDirSelection.file_id;
 
-    const file_name =
-      itemName || (isFolderCreation ? "New Folder" : "New File");
+    const isFolder = isFileType == "folder";
+
+    const file_name = itemName || (isFolder ? "New Folder" : "New File");
 
     const resp = await CreateFileOrFolder({
       CollectionId: CurrentDirSelection.collection_id,
       ParentId: parent_id,
-      IsFolder: isFolderCreation,
+      IsFolder: isFolder,
       Name: file_name,
     });
 
@@ -75,19 +79,39 @@ export default function PermanentDrawerLeft() {
         collection_name: CurrentDirSelection.collection_name,
         file_id: resp.data,
         file_name: file_name,
-        is_folder: isFolderCreation,
+        is_folder: isFolder,
         parent_id: parent_id,
       });
       setCollection(newCollection);
       setCurrentDirSelection({
         collection_id: CurrentDirSelection.collection_id,
         collection_name: CurrentDirSelection.collection_name,
-        type: isFolderCreation ? "folder" : "file",
+        type: isFolder ? "folder" : "file",
         file_name: file_name,
         file_id: resp.data,
-        is_folder: isFolderCreation,
+        is_folder: isFolder,
         parent_id: parent_id,
       });
+    }
+    handleClose();
+  }
+
+  async function handleCollectionCreation() {
+    try {
+      const resp = await InsertCollection(itemName);
+      if (resp.success) {
+        const newCollection = [...Collections];
+        newCollection.push({
+          collection_id: resp.data,
+          collection_name: itemName,
+        });
+        setCollection(newCollection);
+      } else {
+        alert(resp.message);
+      }
+    } catch (error) {
+      console.log(error);
+      alert("Something went wrong");
     }
     handleClose();
   }
@@ -117,6 +141,7 @@ export default function PermanentDrawerLeft() {
           <Tooltip title="Add Collection">
             <IconButton
               size="small"
+              onClick={() => handleOpen("collection")}
               sx={{ color: "#d4d4d8", "&.Mui-disabled": { color: "#71717a" } }}
             >
               <LibraryAddIcon fontSize="small" />
@@ -125,6 +150,7 @@ export default function PermanentDrawerLeft() {
           <Tooltip title="Import Collection">
             <IconButton
               size="small"
+              disabled
               sx={{ color: "#d4d4d8", "&.Mui-disabled": { color: "#71717a" } }}
             >
               <FileUploadIcon fontSize="small" />
@@ -133,6 +159,7 @@ export default function PermanentDrawerLeft() {
           <Tooltip title="Export Collection">
             <IconButton
               size="small"
+              disabled
               sx={{ color: "#d4d4d8", "&.Mui-disabled": { color: "#71717a" } }}
             >
               <FileDownloadIcon fontSize="small" />
@@ -144,7 +171,7 @@ export default function PermanentDrawerLeft() {
           <Tooltip title="New Folder" sx={{ marginLeft: "auto" }}>
             <IconButton
               size="small"
-              onClick={() => handleOpen(true)}
+              onClick={() => handleOpen("folder")}
               sx={{ color: "#d4d4d8", "&.Mui-disabled": { color: "#71717a" } }}
               disabled={!CurrentDirSelection}
             >
@@ -154,7 +181,7 @@ export default function PermanentDrawerLeft() {
           <Tooltip title="New File">
             <IconButton
               size="small"
-              onClick={() => handleOpen(false)}
+              onClick={() => handleOpen("file")}
               sx={{ color: "#d4d4d8", "&.Mui-disabled": { color: "#71717a" } }}
               disabled={!CurrentDirSelection}
             >
@@ -204,7 +231,7 @@ export default function PermanentDrawerLeft() {
         }}
       >
         <DialogTitle sx={{ color: "white" }}>
-          {isFolderCreation ? "Create New Folder" : "Create New File"}
+          {isFileType ? "Create New Folder" : "Create New File"}
         </DialogTitle>
         <DialogContent sx={{ width: 400 }}>
           <TextField
@@ -218,7 +245,8 @@ export default function PermanentDrawerLeft() {
             onChange={(e) => setItemName(e.target.value)}
             onKeyDown={(e) => {
               if (e.key === "Enter") {
-                handleFileCreation();
+                if (isFileType == "collection") handleCollectionCreation();
+                else handleFileCreation();
               }
             }}
             sx={{
@@ -238,7 +266,10 @@ export default function PermanentDrawerLeft() {
             Cancel
           </Button>
           <Button
-            onClick={handleFileCreation}
+            onClick={() => {
+              if (isFileType == "collection") handleCollectionCreation();
+              else handleFileCreation();
+            }}
             sx={{
               color: "#60a5fa",
               "&:hover": { color: "#93c5fd" },

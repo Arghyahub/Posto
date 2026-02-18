@@ -164,12 +164,13 @@ func (c *CollectionRepo) SelectAllCollectionJoinFiles() ([]CollectionJoinFileTyp
 	return collections, nil
 }
 
-func (c *CollectionRepo) InsertCollection(name string) error {
-	_, err := c.DB.Exec("INSERT INTO collection(name) VALUES(?)", name)
+func (c *CollectionRepo) InsertCollection(name string) (int, error) {
+	var id int
+	err := c.DB.QueryRow("INSERT INTO collection(name) VALUES(?) RETURNING pk_collection_id", name).Scan(&id)
 	if err != nil {
-		return err
+		return -1, err
 	}
-	return nil
+	return id, nil
 }
 
 func (c *CollectionRepo) DeleteCollection(id int) error {
