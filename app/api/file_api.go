@@ -26,3 +26,18 @@ func (f *FileApi) CreateFileOrFolder(param repositories.FileCreationParam) ApiRe
 	resp.Data = fileId
 	return resp
 }
+
+func (f *FileApi) UpdateFile(fileId int, requestData repositories.FileRequestData) ApiResponse[bool] {
+	resp := ApiResponse[bool]{Data: false}
+	err := f.Repositories.File.UpdateFile(fileId, requestData)
+	if err != nil {
+		resp.Message = "Unable to update data"
+		resp.Error = err.Error()
+		resp.Success = false
+	} else {
+		resp.Message = "Data updated successfully"
+		resp.Success = true
+		resp.Data = true
+	}
+	return resp
+}

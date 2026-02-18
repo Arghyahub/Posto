@@ -1,6 +1,10 @@
 package repositories
 
-import "database/sql"
+import (
+	"database/sql"
+	"fmt"
+	"strings"
+)
 
 type FileRepo struct {
 	DB *sql.DB
@@ -34,10 +38,11 @@ func (f *FileRepo) CreateFileOrFolder(param FileCreationParam) (*int, error) {
 }
 
 type FileRequestData struct {
-	Method  *string `json:"method"`
-	Url     *string `json:"url"`
-	Headers *string `json:"headers"`
-	Body    *string `json:"body"`
+	Name    *string `json:"name,omitempty"`
+	Method  *string `json:"method,omitempty"`
+	Url     *string `json:"url,omitempty"`
+	Headers *string `json:"headers,omitempty"`
+	Body    *string `json:"body,omitempty"`
 }
 
 func (f *FileRepo) GetRequestData(fileId int) (FileRequestData, error) {
@@ -46,7 +51,7 @@ func (f *FileRepo) GetRequestData(fileId int) (FileRequestData, error) {
 	`, fileId)
 
 	var fileRequestData FileRequestData
-	err := rows.Scan(&fileRequestData.Method, &fileRequestData.Url, &fileRequestData.Headers, &fileRequestData.Body)
+	err := rows.Scan(fileRequestData.Method, fileRequestData.Url, fileRequestData.Headers, fileRequestData.Body)
 	if err != nil {
 		return FileRequestData{}, err
 	}
@@ -54,10 +59,54 @@ func (f *FileRepo) GetRequestData(fileId int) (FileRequestData, error) {
 	return fileRequestData, nil
 }
 
-func (f *FileRepo) UpdateRequestData(fileId int, requestData FileRequestData) error {
-	_, err := f.DB.Exec(`
-		UPDATE file SET method = $1, url = $2, headers = $3, body = $4 WHERE pk_file_id = $5
-	`, requestData.Method, requestData.Url, requestData.Headers, requestData.Body, fileId)
+func (f *FileRepo) UpdateFile(fileId int, requestData FileRequestData) error {
+	queryString := []string{}
+	params := []any{}
+	queryIdx := 0
+
+	if requestData.Name != nil {
+		queryIdx++
+		query := fmt.Sprintf("name = $%v", queryIdx)
+		queryString = append(queryString, query)
+		params = append(params, *requestData.Name)
+	}
+	if requestData.Method != nil {
+		queryIdx++
+		query := fmt.Sprintf("method = $%v", queryIdx)
+		queryString = append(queryString, query)
+		params = append(params, *requestData.Method)
+	}
+
+	if requestData.Url != nil {
+		queryIdx++
+		query := fmt.Sprintf("url = $%v", queryIdx)
+		queryString = append(queryString, query)
+		params = append(params, *requestData.Url)
+	}
+
+	if requestData.Headers != nil {
+		queryIdx++
+		query := fmt.Sprintf("headers = $%v", queryIdx)
+		queryString = append(queryString, query)
+		params = append(params, *requestData.Headers)
+	}
+
+	if requestData.Body != nil {
+		queryIdx++
+		query := fmt.Sprintf("body = $%v", queryIdx)
+		queryString = append(queryString, query)
+		params = append(params, *requestData.Body)
+	}
+
+	if queryIdx == 0 {
+		return fmt.Errorf("No params provided, url/method/body/headers is missing")
+	}
+
+	setQuery := strings.Join(queryString, ",")
+
+	finalQuery := fmt.Sprintf("UPDATE file SET %v WHERE pk_file_id = %d", setQuery, fileId)
+
+	_, err := f.DB.Exec(finalQuery, params...)
 	if err != nil {
 		return err
 	}

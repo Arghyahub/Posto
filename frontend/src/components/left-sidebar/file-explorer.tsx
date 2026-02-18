@@ -19,10 +19,12 @@ import DialogContent from "@mui/material/DialogContent";
 import DialogActions from "@mui/material/DialogActions";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
+import { UpdateFile } from "../../../wailsjs/go/api/FileApi";
 
 import { SelectAllCollectionsWithFiles } from "../../../wailsjs/go/api/CollectionApi";
 import useQueryStore, {
   CollectionNestedType,
+  CurrentDirSelectionType,
   FileJoinType,
 } from "../../store/query_store";
 
@@ -37,7 +39,7 @@ const FileSystemItem = ({
   collection_name: string;
   onContextMenu: (
     event: React.MouseEvent<HTMLElement>,
-    item: FileJoinType,
+    item: CurrentDirSelectionType,
   ) => void;
 }) => {
   const [open, setOpen] = React.useState(false);
@@ -73,6 +75,7 @@ const FileSystemItem = ({
       parent_id: file.parent_id, // @ts-ignore
       is_folder: file.is_folder,
       type: file.is_folder ? "folder" : "file",
+      file_name: file.name,
       collection_name: collection_name,
     });
   };
@@ -89,6 +92,17 @@ const FileSystemItem = ({
   return (
     <>
       <ListItemButton
+        onContextMenu={(e) =>
+          onContextMenu(e, {
+            file_id: file.file_id,
+            collection_id: file.collection_id,
+            parent_id: file.parent_id, // @ts-ignore
+            is_folder: file.is_folder,
+            type: file.is_folder ? "folder" : "file",
+            file_name: file.name,
+            collection_name: collection_name,
+          })
+        }
         disableRipple
         sx={{
           pl: 2 * depth,
@@ -145,7 +159,7 @@ const CollectionItem = ({
   collection: CollectionNestedType;
   onContextMenu: (
     event: React.MouseEvent<HTMLElement>,
-    item: CollectionNestedType,
+    item: CurrentDirSelectionType,
   ) => void;
 }) => {
   const [open, setOpen] = React.useState(false); // Collections default open
@@ -186,7 +200,13 @@ const CollectionItem = ({
   return (
     <>
       <ListItemButton
-        onContextMenu={(e) => onContextMenu(e, collection)}
+        onContextMenu={(e) =>
+          onContextMenu(e, {
+            collection_id: collection.collection_id,
+            collection_name: collection.name,
+            type: "collection",
+          })
+        }
         onClick={handleClick}
         disableRipple
         sx={{
@@ -217,7 +237,7 @@ const CollectionItem = ({
                 depth={2}
                 collection_name={collection.name}
                 onContextMenu={(e, item) => {
-                  if (item.collection_id) {
+                  if (item?.collection_id) {
                     onContextMenu(e, item);
                   }
                 }}
@@ -234,23 +254,29 @@ export default function FileExplorer() {
   const CollectionInNestedForm = useQueryStore(
     (state) => state.CollectionInNestedForm,
   );
+  const CurrentDirSelection = useQueryStore(
+    (state) => state.CurrentDirSelection,
+  );
+  const setCurrentDirSelection = useQueryStore(
+    (state) => state.setCurrentDirSelection,
+  );
   const setCollection = useQueryStore((state) => state.setCollection);
+  const Collections = useQueryStore((state) => state.Collections);
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
-  const [selectedItem, setSelectedItem] = React.useState<
-    FileJoinType | CollectionNestedType | null
-  >(null);
   const [renameDialogOpen, setRenameDialogOpen] = React.useState(false);
   const [newName, setNewName] = React.useState("");
   const open = Boolean(anchorEl);
 
   const handleContextMenu = (
     event: React.MouseEvent<HTMLElement>,
-    item: FileJoinType | CollectionNestedType,
+    item: CurrentDirSelectionType,
   ) => {
     event.preventDefault();
     event.stopPropagation();
     setAnchorEl(event.currentTarget);
-    setSelectedItem(item);
+
+    console.log("context menu : ", item);
+    setCurrentDirSelection({ ...item } as CurrentDirSelectionType);
   };
 
   const handleClose = () => {
@@ -258,8 +284,15 @@ export default function FileExplorer() {
   };
 
   const handleRenameClick = () => {
-    if (selectedItem) {
-      setNewName(selectedItem.name);
+    if (CurrentDirSelection) {
+      // setNewName(CurrentDirSelection.name ?? "");
+      if ("file_id" in CurrentDirSelection) {
+        // FileJoinType
+        setNewName(CurrentDirSelection.file_name ?? "");
+      } else {
+        // CollectionNestedType
+        setNewName(CurrentDirSelection.collection_name ?? "");
+      }
       setRenameDialogOpen(true);
       handleClose();
     }
@@ -270,10 +303,29 @@ export default function FileExplorer() {
     setNewName("");
   };
 
-  const handleRenameSave = () => {
-    console.log("Renaming item:", selectedItem);
-    console.log("New name:", newName);
-    handleRenameClose();
+  const handleRenameSave = async () => {
+    if (!CurrentDirSelection?.file_id) return;
+    try {
+      console.log("Renaming item:", CurrentDirSelection);
+      console.log("New name:", newName);
+      const resp = await UpdateFile(CurrentDirSelection?.file_id, {
+        name: newName,
+      });
+      if (!resp.success) {
+        alert(resp.message);
+        return;
+      }
+      const newCollection = Collections.map((item) => {
+        if (item.file_id == CurrentDirSelection.file_id) {
+          item.file_name = newName;
+        }
+        return item;
+      });
+      setCollection(newCollection);
+      handleRenameClose();
+    } catch (error) {
+      alert("Some error occurred");
+    }
   };
 
   React.useEffect(() => {

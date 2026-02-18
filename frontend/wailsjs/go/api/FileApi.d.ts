@@ -4,3 +4,5 @@ import {repositories} from '../models';
 import {api} from '../models';
 
 export function CreateFileOrFolder(arg1:repositories.FileCreationParam):Promise<api.ApiResponse_int_>;
+
+export function UpdateFile(arg1:number,arg2:repositories.FileRequestData):Promise<api.ApiResponse_bool_>;

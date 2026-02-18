@@ -14,6 +14,6 @@ CREATE TABLE IF NOT EXISTS file (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     method TEXT,
     url TEXT,
-    headers TEXT,
-    body TEXT
+    headers JSON,
+    body JSON
 );

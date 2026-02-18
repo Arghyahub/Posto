@@ -5,3 +5,7 @@
 export function CreateFileOrFolder(arg1) {
   return window['go']['api']['FileApi']['CreateFileOrFolder'](arg1);
 }
+
+export function UpdateFile(arg1, arg2) {
+  return window['go']['api']['FileApi']['UpdateFile'](arg1, arg2);
+}

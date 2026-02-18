@@ -126,6 +126,24 @@ export namespace api {
 		    return a;
 		}
 	}
+	export class ApiResponse_bool_ {
+	    success: boolean;
+	    message: string;
+	    error?: string;
+	    data: boolean;
+	
+	    static createFrom(source: any = {}) {
+	        return new ApiResponse_bool_(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.success = source["success"];
+	        this.message = source["message"];
+	        this.error = source["error"];
+	        this.data = source["data"];
+	    }
+	}
 
 }
 
@@ -288,6 +306,27 @@ export namespace repositories {
 	        this.ParentId = source["ParentId"];
 	        this.IsFolder = source["IsFolder"];
 	        this.Name = source["Name"];
+	    }
+	}
+	
+	export class FileRequestData {
+	    name?: string;
+	    method?: string;
+	    url?: string;
+	    headers?: string;
+	    body?: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new FileRequestData(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.name = source["name"];
+	        this.method = source["method"];
+	        this.url = source["url"];
+	        this.headers = source["headers"];
+	        this.body = source["body"];
 	    }
 	}
 

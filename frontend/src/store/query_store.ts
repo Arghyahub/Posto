@@ -80,6 +80,7 @@ export type CurrentDirSelectionType = {
   collection_id: number;
   collection_name: string;
   file_id?: number; // If null then collection
+  file_name?: string;
   parent_id?: number; // If null then insertion into collection level
   is_folder?: boolean;
   type: "collection" | "file" | "folder";

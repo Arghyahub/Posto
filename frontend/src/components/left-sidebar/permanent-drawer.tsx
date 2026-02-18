@@ -57,11 +57,14 @@ export default function PermanentDrawerLeft() {
     if (CurrentDirSelection.type == "folder")
       parent_id = CurrentDirSelection.file_id;
 
+    const file_name =
+      itemName || (isFolderCreation ? "New Folder" : "New File");
+
     const resp = await CreateFileOrFolder({
       CollectionId: CurrentDirSelection.collection_id,
       ParentId: parent_id,
       IsFolder: isFolderCreation,
-      Name: itemName || (isFolderCreation ? "New Folder" : "New File"),
+      Name: file_name,
     });
 
     if (resp.success && resp.data) {
@@ -71,7 +74,7 @@ export default function PermanentDrawerLeft() {
         collection_id: CurrentDirSelection.collection_id,
         collection_name: CurrentDirSelection.collection_name,
         file_id: resp.data,
-        file_name: itemName || (isFolderCreation ? "New Folder" : "New File"),
+        file_name: file_name,
         is_folder: isFolderCreation,
         parent_id: parent_id,
       });
@@ -80,6 +83,7 @@ export default function PermanentDrawerLeft() {
         collection_id: CurrentDirSelection.collection_id,
         collection_name: CurrentDirSelection.collection_name,
         type: isFolderCreation ? "folder" : "file",
+        file_name: file_name,
         file_id: resp.data,
         is_folder: isFolderCreation,
         parent_id: parent_id,
