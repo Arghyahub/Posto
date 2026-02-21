@@ -75,6 +75,8 @@ function getCollectionInNestedForm(
   return ans;
 }
 
+export type HttpMethodType = "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
+
 // ---------- Individual Selection ---------------
 export type CurrentDirSelectionType = {
   collection_id: number;
@@ -90,12 +92,13 @@ export type CurrentDirSelectionType = {
 export type FileTabOpenType = {
   file_id: number;
   name: string;
-  url?: string;
-  method?: "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
-  params?: string;
-  body?: Record<any, any>;
-  headers?: Record<any, any>;
-  response?: any;
+  api_data?: {
+    url?: string;
+    method?: HttpMethodType;
+    body?: Record<any, any>;
+    headers?: Record<any, any>;
+    response?: any;
+  };
 };
 
 interface State {

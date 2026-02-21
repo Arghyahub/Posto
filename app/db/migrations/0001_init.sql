@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS file (
     parent_id INTEGER REFERENCES file(pk_file_id),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    method TEXT,
+    method TEXT DEFAULT 'GET',
     url TEXT,
     headers JSON,
     body JSON

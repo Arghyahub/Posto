@@ -41,3 +41,21 @@ func (f *FileApi) UpdateFile(fileId int, requestData repositories.FileRequestDat
 	}
 	return resp
 }
+
+func (f *FileApi) GetRequestData(fileId int) ApiResponse[repositories.FileRequestData] {
+	resp := ApiResponse[repositories.FileRequestData]{}
+
+	data, err := f.Repositories.File.GetRequestData(fileId)
+
+	if err != nil {
+		resp.Message = "Unable to fetch Api data"
+		resp.Error = err.Error()
+		resp.Success = false
+	} else {
+		resp.Message = "Api fetched successfully"
+		resp.Data = data
+		resp.Success = true
+	}
+
+	return resp
+}

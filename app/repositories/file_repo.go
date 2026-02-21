@@ -47,13 +47,23 @@ type FileRequestData struct {
 
 func (f *FileRepo) GetRequestData(fileId int) (FileRequestData, error) {
 	rows := f.DB.QueryRow(`
-		SELECT method,url,headers,body FROM file WHERE pk_file_id = $1
+		SELECT is_folder,method,url,headers,body FROM file WHERE pk_file_id = $1
 	`, fileId)
 
-	var fileRequestData FileRequestData
-	err := rows.Scan(fileRequestData.Method, fileRequestData.Url, fileRequestData.Headers, fileRequestData.Body)
+	fileRequestData := FileRequestData{}
+	var is_folder bool
+	var method, url, headers, body *string
+	err := rows.Scan(&is_folder, &method, &url, &headers, &body)
 	if err != nil {
-		return FileRequestData{}, err
+		return fileRequestData, err
+	}
+	fileRequestData.Method = method
+	fileRequestData.Url = url
+	fileRequestData.Headers = headers
+	fileRequestData.Body = body
+
+	if is_folder {
+		return fileRequestData, fmt.Errorf("Cannot fetch api data for folders")
 	}
 
 	return fileRequestData, nil
