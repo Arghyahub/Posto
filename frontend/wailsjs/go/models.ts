@@ -162,6 +162,60 @@ export namespace api {
 	        this.data = source["data"];
 	    }
 	}
+	export class HttpResponse {
+	    status_code: number;
+	    content_type: string;
+	    body: string;
+	    is_binary: boolean;
+	
+	    static createFrom(source: any = {}) {
+	        return new HttpResponse(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.status_code = source["status_code"];
+	        this.content_type = source["content_type"];
+	        this.body = source["body"];
+	        this.is_binary = source["is_binary"];
+	    }
+	}
+	export class ApiResponse_posto_app_api_HttpResponse_ {
+	    success: boolean;
+	    message: string;
+	    error?: string;
+	    data: HttpResponse;
+	
+	    static createFrom(source: any = {}) {
+	        return new ApiResponse_posto_app_api_HttpResponse_(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.success = source["success"];
+	        this.message = source["message"];
+	        this.error = source["error"];
+	        this.data = this.convertValues(source["data"], HttpResponse);
+	    }
+	
+		convertValues(a: any, classs: any, asMap: boolean = false): any {
+		    if (!a) {
+		        return a;
+		    }
+		    if (a.slice && a.map) {
+		        return (a as any[]).map(elem => this.convertValues(elem, classs));
+		    } else if ("object" === typeof a) {
+		        if (asMap) {
+		            for (const key of Object.keys(a)) {
+		                a[key] = new classs(a[key]);
+		            }
+		            return a;
+		        }
+		        return new classs(a);
+		    }
+		    return a;
+		}
+	}
 	export class ApiResponse_posto_app_repositories_FileRequestData_ {
 	    success: boolean;
 	    message: string;

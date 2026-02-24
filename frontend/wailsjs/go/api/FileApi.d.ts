@@ -7,4 +7,6 @@ export function CreateFileOrFolder(arg1:repositories.FileCreationParam):Promise<
 
 export function GetRequestData(arg1:number):Promise<api.ApiResponse_posto_app_repositories_FileRequestData_>;
 
+export function SendRequest(arg1:number):Promise<api.ApiResponse_posto_app_api_HttpResponse_>;
+
 export function UpdateFile(arg1:number,arg2:repositories.FileRequestData):Promise<api.ApiResponse_bool_>;

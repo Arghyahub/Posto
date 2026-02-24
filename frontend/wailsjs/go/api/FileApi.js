@@ -10,6 +10,10 @@ export function GetRequestData(arg1) {
   return window['go']['api']['FileApi']['GetRequestData'](arg1);
 }
 
+export function SendRequest(arg1) {
+  return window['go']['api']['FileApi']['SendRequest'](arg1);
+}
+
 export function UpdateFile(arg1, arg2) {
   return window['go']['api']['FileApi']['UpdateFile'](arg1, arg2);
 }

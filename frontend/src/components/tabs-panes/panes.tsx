@@ -11,12 +11,18 @@ import {
   MenuItem,
   Select,
   Typography,
+  Button,
 } from "@mui/material";
-import { GetRequestData, UpdateFile } from "../../../wailsjs/go/api/FileApi";
+import {
+  GetRequestData,
+  UpdateFile,
+  SendRequest,
+} from "../../../wailsjs/go/api/FileApi";
 import { useThrottledCallback } from "use-debounce";
 import ParamsComponent from "./params-component";
 import HeadersComponent from "./headers-component";
 import BodyComponent from "./body-component";
+import SendIcon from "@mui/icons-material/Send";
 
 type Props = {};
 
@@ -127,6 +133,61 @@ const Panes = (props: Props) => {
     }
   }
 
+  async function showResponse(resp: any) {
+    if (!lastFileOpen) return;
+    const currentTabs = useQueryStore.getState().FileTabsOpen;
+    const updatedTabs = currentTabs.map((tab) => {
+      if (tab.file_id === lastFileOpen.file_id) {
+        return {
+          ...tab,
+          api_data: {
+            ...tab.api_data,
+            response: resp,
+          },
+        };
+      }
+      return tab;
+    });
+    setFileTabsOpen(updatedTabs);
+  }
+
+  async function handleSendRequest() {
+    if (!lastFileOpen?.api_data?.url) return;
+    try {
+      const resp = await SendRequest(lastFileOpen.file_id);
+      if (resp.success && resp.data) {
+        const { status_code, content_type, body, is_binary } = resp.data;
+
+        if (is_binary) {
+          if (content_type.startsWith("image/")) {
+            showResponse({
+              _isImage: true,
+              _base64: body,
+              _contentType: content_type,
+            });
+          } else {
+            showResponse(`Binary file of type: ${content_type}`);
+          }
+        } else if (content_type.includes("application/json")) {
+          try {
+            const json = JSON.parse(body);
+            showResponse(json);
+          } catch {
+            showResponse(body);
+          }
+        } else {
+          showResponse(body);
+        }
+      } else {
+        console.error(resp.message, resp.error);
+        showResponse(resp.error || resp.message || "Failed to make request.");
+      }
+    } catch (error) {
+      console.log("error: ", error);
+      showResponse(error);
+    }
+  }
+
   useEffect(() => {
     if (lastFileOpen && !lastFileOpen?.api_data) {
       handleGetRequestData(lastFileOpen.file_id);
@@ -208,6 +269,17 @@ const Panes = (props: Props) => {
             },
           }}
         />
+        {/* Send button */}
+        <Button variant="contained" color="primary" onClick={handleSendRequest}>
+          <SendIcon
+            sx={{
+              transform: "rotate(-45deg)",
+              marginBottom: 0.5,
+              height: 20,
+              width: 20,
+            }}
+          />
+        </Button>
       </Box>
 
       <Box sx={{ flexGrow: 1, display: "flex", flexDirection: "column" }}>
@@ -261,6 +333,62 @@ const Panes = (props: Props) => {
               onRequestChange={handleRequestChange}
             />
           )}
+        </Box>
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            flexGrow: 1,
+            minHeight: 200,
+          }}
+        >
+          <Box
+            sx={{
+              p: 2,
+              flexGrow: 1,
+              bgcolor: "#1e1e1e",
+              border: "1px solid #404040",
+              borderTop: 0,
+              overflow: "auto",
+            }}
+          >
+            {lastFileOpen.api_data?.response &&
+              (lastFileOpen.api_data.response._isImage ? (
+                <img
+                  src={`data:${lastFileOpen.api_data.response._contentType};base64,${lastFileOpen.api_data.response._base64}`}
+                  alt="Response preview"
+                  style={{
+                    maxWidth: "100%",
+                    maxHeight: "100%",
+                    objectFit: "contain",
+                  }}
+                />
+              ) : (
+                <Box
+                  component="pre"
+                  sx={{
+                    m: 0,
+                    color: "#d4d4d4",
+                    fontSize: "0.875rem",
+                    fontFamily: 'Consolas, "Courier New", monospace',
+                    whiteSpace: "pre-wrap",
+                    wordBreak: "break-all",
+                  }}
+                >
+                  {typeof lastFileOpen.api_data.response === "object"
+                    ? JSON.stringify(lastFileOpen.api_data.response, null, 2)
+                    : String(lastFileOpen.api_data.response)}
+                </Box>
+              ))}
+            {!lastFileOpen.api_data?.response && (
+              <Typography
+                variant="body2"
+                sx={{ color: "#6b7280", fontStyle: "italic" }}
+              >
+                Response will appear here...
+              </Typography>
+            )}
+          </Box>
         </Box>
       </Box>
     </Box>
