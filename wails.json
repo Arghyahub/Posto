@@ -9,5 +9,12 @@
   "author": {
     "name": "Arghya Das",
     "email": "arghyadas242004@gmail.com"
+  },
+  "info": {
+    "companyName": "Arghya Das",
+    "productName": "Posto",
+    "productVersion": "1.0.0",
+    "copyright": "Copyright 2026 Arghya Das",
+    "comments": "An elegant API client built with Wails"
   }
 }

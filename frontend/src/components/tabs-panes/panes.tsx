@@ -33,6 +33,8 @@ const Panes = (props: Props) => {
   const setFileTabsOpen = useQueryStore((state) => state.setFileTabsOpen);
   const FileIdsOpenHistory = useQueryStore((state) => state.FileIdsOpenHistory);
   const [innerTab, setInnerTab] = useState(0);
+  const [responseTab, setResponseTab] = useState(0);
+  const [responseHeight, setResponseHeight] = useState(300);
   const throttledDbFileUpdate = useThrottledCallback(handleDbFileUpdate, 800);
 
   const { lastFileOpen, lastFileIdx } = useMemo(() => {
@@ -310,6 +312,8 @@ const Panes = (props: Props) => {
             flexGrow: 1,
             border: "1px solid #404040",
             borderTop: 0,
+            overflow: "auto",
+            minHeight: 100,
           }}
         >
           {/* Params */}
@@ -334,26 +338,96 @@ const Panes = (props: Props) => {
             />
           )}
         </Box>
+        {/* Resizer */}
+        <Box
+          onMouseDown={(e) => {
+            e.preventDefault();
+            const startY = e.clientY;
+            const startHeight = responseHeight;
+            const handleMouseMove = (mouseMoveEvent: MouseEvent) => {
+              const deltaY = mouseMoveEvent.clientY - startY;
+              const newHeight = Math.max(
+                100,
+                Math.min(window.innerHeight - 200, startHeight - deltaY),
+              );
+              setResponseHeight(newHeight);
+            };
+            const handleMouseUp = () => {
+              document.removeEventListener("mousemove", handleMouseMove);
+              document.removeEventListener("mouseup", handleMouseUp);
+            };
+            document.addEventListener("mousemove", handleMouseMove);
+            document.addEventListener("mouseup", handleMouseUp);
+          }}
+          sx={{
+            height: 8,
+            cursor: "row-resize",
+            bgcolor: "transparent",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            "&:hover > div": {
+              bgcolor: "#3b82f6",
+            },
+            my: 1,
+          }}
+        >
+          <Box
+            sx={{
+              width: 50,
+              height: 4,
+              borderRadius: 2,
+              bgcolor: "#404040",
+              transition: "background-color 0.2s",
+            }}
+          />
+        </Box>
         <Box
           sx={{
             display: "flex",
             flexDirection: "column",
-            flexGrow: 1,
-            minHeight: 200,
+            height: responseHeight,
+            flexShrink: 0,
           }}
         >
+          {lastFileOpen.api_data?.response && (
+            <Tabs
+              value={responseTab}
+              onChange={(e, newValue) => setResponseTab(newValue)}
+              sx={{
+                minHeight: 36,
+                "& .MuiTab-root": {
+                  color: "#9ca3af",
+                  textTransform: "none",
+                  minHeight: 36,
+                  py: 1,
+                },
+                "& .Mui-selected": { color: "#3b82f6" },
+                "& .MuiTabs-indicator": { backgroundColor: "#3b82f6" },
+                borderBottom: 1,
+                borderColor: "#404040",
+              }}
+            >
+              <Tab label="Raw" />
+              <Tab label="Preview" />
+            </Tabs>
+          )}
           <Box
             sx={{
               p: 2,
               flexGrow: 1,
               bgcolor: "#1e1e1e",
               border: "1px solid #404040",
-              borderTop: 0,
+              borderTop: lastFileOpen.api_data?.response
+                ? 0
+                : "1px solid #404040",
               overflow: "auto",
+              display: "flex",
+              flexDirection: "column",
             }}
           >
-            {lastFileOpen.api_data?.response &&
-              (lastFileOpen.api_data.response._isImage ? (
+            {lastFileOpen.api_data?.response ? (
+              lastFileOpen.api_data.response._isImage ? (
                 <img
                   src={`data:${lastFileOpen.api_data.response._contentType};base64,${lastFileOpen.api_data.response._base64}`}
                   alt="Response preview"
@@ -361,6 +435,23 @@ const Panes = (props: Props) => {
                     maxWidth: "100%",
                     maxHeight: "100%",
                     objectFit: "contain",
+                  }}
+                />
+              ) : responseTab === 1 ? (
+                <iframe
+                  title="html-preview"
+                  srcDoc={
+                    typeof lastFileOpen.api_data.response === "object"
+                      ? JSON.stringify(lastFileOpen.api_data.response, null, 2)
+                      : String(lastFileOpen.api_data.response)
+                  }
+                  sandbox=""
+                  style={{
+                    width: "100%",
+                    flexGrow: 1,
+                    border: "none",
+                    backgroundColor: "white",
+                    borderRadius: "4px",
                   }}
                 />
               ) : (
@@ -379,8 +470,8 @@ const Panes = (props: Props) => {
                     ? JSON.stringify(lastFileOpen.api_data.response, null, 2)
                     : String(lastFileOpen.api_data.response)}
                 </Box>
-              ))}
-            {!lastFileOpen.api_data?.response && (
+              )
+            ) : (
               <Typography
                 variant="body2"
                 sx={{ color: "#6b7280", fontStyle: "italic" }}
