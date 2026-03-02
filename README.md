@@ -21,6 +21,12 @@
 
 ---
 
+## ✨ Download builds here
+
+- [Linux](https://drive.google.com/file/d/1BPci1GgE-mJBisn-uTmekmA_6Zj5-KHG/view?usp=drive_link)
+- [Windows](https://drive.google.com/file/d/1gVNRiblnEnJB7WjsoTHfpHGCxCmz1V2G/view?usp=drive_link)
+- [Mac](https://drive.google.com/file/d/1e74Cyj8u6gUMJ4pszcZIHIp-PL8wogR-/view?usp=drive_link) then run `xattr -d com.apple.quarantine ~/Applications/Posto.app`
+
 ## ✨ Features
 
 - 🚀 **Send HTTP Requests** — Support for GET, POST, PUT, PATCH, DELETE and more
